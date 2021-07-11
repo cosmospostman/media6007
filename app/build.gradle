@@ -29,7 +29,7 @@ application {
     mainClass = 'media6007.Main'
 }
 
-tasks.named('test') {
+test {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
