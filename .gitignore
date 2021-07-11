@@ -1,5 +1,7 @@
-/data/
 .DS_Store
+/data/
+/app/bin/**
+*.class
 
 # Ignore Gradle project-specific cache directory
 .gradle
