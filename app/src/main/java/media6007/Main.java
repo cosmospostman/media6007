@@ -3,9 +3,30 @@
  */
 package media6007;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import media6007.Parser.Document;
+
 public class Main {
 
-    public static void main(String[] args) {
-        System.out.println("Hello from Main");
+    final static String DATA_PATH = "/Users/mlj/Development/media6007/data/";
+
+    public static void main(String[] args) throws IOException {
+        Parser parser = new Parser();
+        parser.readFiles(DATA_PATH);
+        List<Document> results = parser.getDocuments();
+
+        List<Document> selectedDocuments = new ArrayList<>();
+        for (Document d : results) {
+            if (d.bagOfWords.contains("science")) {
+                selectedDocuments.add(d);
+            }
+        }
+        System.out.println("Parsed " + results.size() + " documents");
+        System.out.println("Selected " + selectedDocuments.size() + " documents");
+        
     }
 }

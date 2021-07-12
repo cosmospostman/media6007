@@ -3,17 +3,17 @@ package media6007;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import com.google.common.io.Files;
 
 public class Parser {
     
-    final static String DATA_PATH = "/Users/mlj/Development/media6007/data/";
-
-    final static private String DOCUMENT_DELIMITER = "____________________________________________________________";
+    private final static String DOCUMENT_DELIMITER = "____________________________________________________________";
 
     public static class Document {
         String fullText;
@@ -21,6 +21,17 @@ public class Parser {
         String title;
         String date;
         String section;
+        Set<String> bagOfWords;
+
+        protected void fillBagOfWords() {
+            bagOfWords = new HashSet<>();
+            String[] words = fullText.split("\\s+");
+            for (String w : words) {
+                w = w.toLowerCase();
+                w = w.replaceAll("[^a-zA-Z0-9\\s]", ""); // alphanumeric chars only
+                bagOfWords.add(w);
+            }
+        }
         //TODO: bag of keywords, less exclusions
         //TODO: hashID
 
@@ -31,8 +42,8 @@ public class Parser {
     private boolean fullTextMode = false;
     private StringJoiner fullTextJoiner;
 
-    public void readFiles() throws IOException {
-        File[] files = new File(DATA_PATH).listFiles();
+    public void readFiles(String dataPath) throws IOException {
+        File[] files = new File(dataPath).listFiles();
         System.out.println("Reading files:");
         for (File f : files) {
             if (f.isFile()) {
@@ -49,6 +60,7 @@ public class Parser {
     protected void processLine(String line) {
         if (line.equals(DOCUMENT_DELIMITER)) {
             if (currentDocument != null) {
+                currentDocument.fillBagOfWords();
                 documents.add(currentDocument);
             }
             currentDocument = new Document();
@@ -69,8 +81,8 @@ public class Parser {
         }
 
         if (fullTextMode) {
-            if (line.startsWith("CREDIT: ")) {
-                currentDocument.credit = line.replace("CREDIT: ", "");
+            if (line.startsWith("CREDIT: By ")) {
+                currentDocument.credit = line.replace("CREDIT: By ", "");
             } else {
                 fullTextJoiner.add(line);
             }
@@ -91,7 +103,6 @@ public class Parser {
             currentDocument.section = line.replace("Section: ", "");
             return;
         }
-
 
     }
 
