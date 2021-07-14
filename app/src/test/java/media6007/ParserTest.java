@@ -1,14 +1,16 @@
 package media6007;
 
-import org.junit.jupiter.api.Test;
-
-import media6007.Parser.Document;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import media6007.Parser.Document;
 
 class ParserTest {
 
@@ -36,5 +38,23 @@ class ParserTest {
             "Unexpected title field");
         assertTrue(results.get(0).fullText.startsWith("THE fraud case brought by NSW Police"),
             "Unexpected start to fullText field");
+    }
+
+    @Test void testGetNGramsFromText() {
+        String text = "text; - with (climate change) climate change bent";
+        Map<String, Integer> expected = Map.of(
+            "with", Integer.valueOf(1),
+            "with climate", Integer.valueOf(1),
+            "change climate", Integer.valueOf(1),
+            "change", Integer.valueOf(2),
+            "bent", Integer.valueOf(1),
+            "text with", Integer.valueOf(1),
+            "text", Integer.valueOf(1),
+            "climate", Integer.valueOf(2),
+            "change bent", Integer.valueOf(1),
+            "climate change", Integer.valueOf(2)
+            );
+        Map<String, Integer> actual = Parser.Document.countNGramsFromText(text);
+        assertEquals(expected, actual);
     }
 }

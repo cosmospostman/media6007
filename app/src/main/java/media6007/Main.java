@@ -5,28 +5,52 @@ package media6007;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import com.google.gson.Gson;
 
 import media6007.Parser.Document;
 
 public class Main {
 
-    final static String DATA_PATH = "/Users/mlj/Development/media6007/data/";
+    // final static String DATA_PATH = "/Users/mlj/Development/media6007/data/";
+    final static String DATA_PATH = "/Users/mlj/Desktop/WeeklyTimes";
+
+    private static String documentsToJson(List<Document> documents) {
+        Gson gson = new Gson();
+        return gson.toJson(documents);
+    }
 
     public static void main(String[] args) throws IOException {
         Parser parser = new Parser();
         parser.readFiles(DATA_PATH);
         List<Document> results = parser.getDocuments();
 
+        
+
+        // Select "science" documents
         List<Document> selectedDocuments = new ArrayList<>();
         for (Document d : results) {
-            if (d.bagOfWords.contains("science")) {
+            if (d.nGramCount.containsKey("climate change")) {
+                // System.out.println(d.title);
+                // System.out.println(d.fullText);
+                // System.out.println("\n________");
                 selectedDocuments.add(d);
             }
         }
-        System.out.println("Parsed " + results.size() + " documents");
-        System.out.println("Selected " + selectedDocuments.size() + " documents");
+
+        // System.out.println("Parsed " + results.size() + " documents");
+        // System.out.println("Selected " + selectedDocuments.size() + " documents");
+
+        System.out.println(documentsToJson(selectedDocuments));
         
+        // Merge ngram count
+        // Map<String, Integer> merged = Parser.mergeNGramCount(selectedDocuments);
+        // Map<String, Integer> sorted = Parser.reverseSort(merged);
+        // for (Map.Entry<String, Integer> e : sorted.entrySet()) {
+        //     if (e.getValue() > 9) {
+        //         System.out.println(e.getKey() + "\t" + e.getValue());
+        //     }
+        // }
+        // System.out.println("bushfire: " + sorted.get("bushfire"));
     }
 }

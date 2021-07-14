@@ -3,13 +3,18 @@ package media6007;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import com.google.common.collect.Iterators;
 import com.google.common.io.Files;
+import com.google.gson.Gson;
 
 public class Parser {
     
@@ -21,20 +26,69 @@ public class Parser {
         String title;
         String date;
         String section;
-        Set<String> bagOfWords;
+        transient Map<String, Integer> nGramCount;
 
-        protected void fillBagOfWords() {
-            bagOfWords = new HashSet<>();
-            String[] words = fullText.split("\\s+");
-            for (String w : words) {
-                w = w.toLowerCase();
-                w = w.replaceAll("[^a-zA-Z0-9\\s]", ""); // alphanumeric chars only
-                bagOfWords.add(w);
-            }
-        }
         //TODO: bag of keywords, less exclusions
         //TODO: hashID
 
+        protected void countNGrams() {
+            nGramCount = countNGramsFromText(fullText);
+        }
+
+        protected static Map<String, Integer> countNGramsFromText(String text) {
+            Map<String, Integer> nGramCount = new LinkedHashMap<>();
+
+            Iterator<String> words = Iterators.forArray(text.split("\\s+"));
+            String previousWord = null;
+            String thisWord;
+            while (words.hasNext()) {
+                thisWord = words.next();
+                thisWord = thisWord.toLowerCase();
+                thisWord = thisWord.replaceAll("[^a-zA-Z0-9\\s]", ""); // alphanumeric chars only
+                if (thisWord.isEmpty()) {
+                    continue;
+                }
+                addToCount(nGramCount, thisWord);
+                if(previousWord != null) {
+                    addToCount(nGramCount, previousWord + " " + thisWord);
+                }
+                previousWord = thisWord;
+            }
+
+            // Reverse sort
+            return nGramCount;
+        }
+
+        private static void addToCount(Map<String, Integer> countMap, String nGram) {
+            if (countMap.containsKey(nGram)) {
+                countMap.put(nGram, countMap.get(nGram) + 1);
+            } else {
+                countMap.put(nGram, 1);
+            }
+        }
+
+    }
+
+    public static Map<String, Integer> reverseSort(Map<String, Integer> map) {
+        Map<String, Integer> sortedMap = new LinkedHashMap<>();
+        map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+            .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
+        return sortedMap;
+    }
+
+    public static Map<String, Integer> mergeNGramCount(List<Document> documents) {
+        Map<String, Integer> mergedCount = new LinkedHashMap<>();
+        for (Document d : documents) {
+            for (Map.Entry<String, Integer> e :  d.nGramCount.entrySet()) {
+                if (mergedCount.containsKey (e.getKey())) {
+                    int currentCount = mergedCount.get(e.getKey());
+                    mergedCount.put(e.getKey(), currentCount + e.getValue());
+                } else {
+                    mergedCount.put(e.getKey(), e.getValue());
+                }
+            }
+        }
+        return mergedCount;
     }
 
     private List<Document> documents = new LinkedList<>();
@@ -44,11 +98,11 @@ public class Parser {
 
     public void readFiles(String dataPath) throws IOException {
         File[] files = new File(dataPath).listFiles();
-        System.out.println("Reading files:");
+        // System.out.println("Reading files:");
         for (File f : files) {
             if (f.isFile()) {
                 if(Files.getFileExtension(f.getAbsolutePath()).equals("txt")) {
-                    System.out.println(f.getName());
+                    // System.out.println(f.getName());
                     List<String> lines = Files.asCharSource(f, StandardCharsets.UTF_8).readLines();
                     lines.forEach(this::processLine);
                 }
@@ -60,7 +114,7 @@ public class Parser {
     protected void processLine(String line) {
         if (line.equals(DOCUMENT_DELIMITER)) {
             if (currentDocument != null) {
-                currentDocument.fillBagOfWords();
+                currentDocument.countNGrams();
                 documents.add(currentDocument);
             }
             currentDocument = new Document();
