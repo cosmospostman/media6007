@@ -28,12 +28,17 @@
 
     <div class="is-row" style="margin-top: 20px">
         <div class="is-col is-50" id="article">
+            <span id="section" style="text-transform: uppercase;"></span>
+            <var id="hashId"></var>
             <h1 id="title">&nbsp;</h1>
             <div id="fulltext" class="is-large" style="white-space: pre-line;"></div>
         </div>
         <div class="is-col is-20"></div>
-        <div class="is-col is-30">
-            Controls
+        <div class="is-col is-30" id="right-controls">
+            <form id="annotations">
+                <ul data-kube="check" style="list-style: none;" id="annotations-list">
+                </ul>
+            </form>
         </div>
     </div>
 

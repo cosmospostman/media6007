@@ -9,12 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringJoiner;
 
 import com.google.common.collect.Iterators;
 import com.google.common.io.Files;
-import com.google.gson.Gson;
 
 public class Parser {
     
@@ -26,6 +24,7 @@ public class Parser {
         String title;
         String date;
         String section;
+        String hashId;
         transient Map<String, Integer> nGramCount;
 
         //TODO: bag of keywords, less exclusions
@@ -33,6 +32,18 @@ public class Parser {
 
         protected void countNGrams() {
             nGramCount = countNGramsFromText(fullText);
+        }
+
+        protected void setHashId() {
+            String date = "XX";
+            String titleWord = "XX";
+            String textWord = "XX";
+            if (this.date != null) {date = this.date;}
+            if (this.title != null) {titleWord = this.title.split("\\s+")[0];}
+            if (this.fullText != null) {textWord = fullText.split("\\s+")[0];}
+            this.hashId = this.date + "_" + titleWord + textWord;
+            this.hashId = this.hashId.replaceAll("[^a-zA-Z0-9\\s]", "");
+            this.hashId = this.hashId.replaceAll("\\s+","");
         }
 
         protected static Map<String, Integer> countNGramsFromText(String text) {
@@ -115,6 +126,7 @@ public class Parser {
         if (line.equals(DOCUMENT_DELIMITER)) {
             if (currentDocument != null) {
                 currentDocument.countNGrams();
+                currentDocument.setHashId();
                 documents.add(currentDocument);
             }
             currentDocument = new Document();

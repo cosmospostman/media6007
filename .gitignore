@@ -2,6 +2,7 @@
 /data/
 /app/bin/**
 *.class
+/annotator/html/data
 
 # Ignore Gradle project-specific cache directory
 .gradle
