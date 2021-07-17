@@ -3,12 +3,9 @@ package media6007;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringJoiner;
 
 import com.google.common.collect.Iterators;
@@ -25,7 +22,7 @@ public class Parser {
         String date;
         String section;
         String hashId;
-        transient Map<String, Integer> nGramCount;
+        transient StringCounter nGramCount;
 
         //TODO: bag of keywords, less exclusions
         //TODO: hashID
@@ -46,8 +43,8 @@ public class Parser {
             this.hashId = this.hashId.replaceAll("\\s+","");
         }
 
-        protected static Map<String, Integer> countNGramsFromText(String text) {
-            Map<String, Integer> nGramCount = new LinkedHashMap<>();
+        protected static StringCounter countNGramsFromText(String text) {
+            StringCounter nGramCount = new StringCounter();
 
             Iterator<String> words = Iterators.forArray(text.split("\\s+"));
             String previousWord = null;
@@ -59,9 +56,9 @@ public class Parser {
                 if (thisWord.isEmpty()) {
                     continue;
                 }
-                addToCount(nGramCount, thisWord);
+                nGramCount.add(thisWord);
                 if(previousWord != null) {
-                    addToCount(nGramCount, previousWord + " " + thisWord);
+                    nGramCount.add(previousWord + " " + thisWord);
                 }
                 previousWord = thisWord;
             }
@@ -69,37 +66,6 @@ public class Parser {
             // Reverse sort
             return nGramCount;
         }
-
-        private static void addToCount(Map<String, Integer> countMap, String nGram) {
-            if (countMap.containsKey(nGram)) {
-                countMap.put(nGram, countMap.get(nGram) + 1);
-            } else {
-                countMap.put(nGram, 1);
-            }
-        }
-
-    }
-
-    public static Map<String, Integer> reverseSort(Map<String, Integer> map) {
-        Map<String, Integer> sortedMap = new LinkedHashMap<>();
-        map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-            .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
-        return sortedMap;
-    }
-
-    public static Map<String, Integer> mergeNGramCount(List<Document> documents) {
-        Map<String, Integer> mergedCount = new LinkedHashMap<>();
-        for (Document d : documents) {
-            for (Map.Entry<String, Integer> e :  d.nGramCount.entrySet()) {
-                if (mergedCount.containsKey (e.getKey())) {
-                    int currentCount = mergedCount.get(e.getKey());
-                    mergedCount.put(e.getKey(), currentCount + e.getValue());
-                } else {
-                    mergedCount.put(e.getKey(), e.getValue());
-                }
-            }
-        }
-        return mergedCount;
     }
 
     private List<Document> documents = new LinkedList<>();
@@ -119,7 +85,6 @@ public class Parser {
                 }
             }
         }
-
     }
 
     protected void processLine(String line) {

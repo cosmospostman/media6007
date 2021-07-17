@@ -54,7 +54,7 @@ class ParserTest {
             "change bent", Integer.valueOf(1),
             "climate change", Integer.valueOf(2)
             );
-        Map<String, Integer> actual = Parser.Document.countNGramsFromText(text);
+        Map<String, Integer> actual = Parser.Document.countNGramsFromText(text).getMap();
         assertEquals(expected, actual);
     }
 }
