@@ -4,7 +4,7 @@ let annotations;
 let documentIndex = -1;
 let currentDocumentId;
 
-let highlight_text = "climate change";
+let highlight_text = ["climate change", "emissions", "carbon"];
 
 async function loadData() {
     documents = await $.get('/data/documents.json');
@@ -58,7 +58,10 @@ function loadCurrentDocument() {
 
     let doc = documents[documentIndex];
     if (!doc) { return; }
-    let fullText = doc.fullText.replace(new RegExp(highlight_text, "gi"), (match) => `<mark>${match}</mark>`);
+    let fullText = doc.fullText;
+    highlight_text.forEach(term => 
+            fullText = fullText.replace(new RegExp(term, "gi"), (match) => `<mark>${match}</mark>`)
+        );
 
     currentDocumentId = doc.hashId;
     $("#hashId").text(doc.hashId);

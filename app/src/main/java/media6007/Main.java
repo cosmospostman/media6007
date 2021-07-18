@@ -6,6 +6,8 @@ package media6007;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 
 import media6007.Parser.Document;
@@ -20,28 +22,51 @@ public class Main {
         return gson.toJson(documents);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static List<Document> selectDocuments() throws IOException {
         Parser parser = new Parser();
         parser.readFiles(DATA_PATH);
-        List<Document> results = parser.getDocuments();
-
-        
+        List<Document> allDocuments = parser.getDocuments();
 
         // Select "science" documents
         List<Document> selectedDocuments = new ArrayList<>();
-        for (Document d : results) {
-            if (d.nGramCount.containsKey("climate change")) {
-                // System.out.println(d.title);
-                // System.out.println(d.fullText);
-                // System.out.println("\n________");
+        for (Document d : allDocuments) {
+            if (d.nGramCount.containsKey("climate change") ||
+                d.nGramCount.containsKey("carbon") ||
+                d.nGramCount.containsKey("emissions")) {
                 selectedDocuments.add(d);
             }
         }
+        selectedDocuments = CountUtils.uniq(selectedDocuments);
 
-        // System.out.println("Parsed " + results.size() + " documents");
-        // System.out.println("Selected " + selectedDocuments.size() + " documents");
+        System.out.println("Parsed " + allDocuments.size() + " documents");
+        System.out.println("Selected " + selectedDocuments.size() + " documents");
 
-        System.out.println(documentsToJson(selectedDocuments));
+        return selectedDocuments;
+    }
+
+    public static void main(String[] args) throws IOException {
+        List<Document> selectedDocuments = selectDocuments();
+
+        // dateCount(selectedDocuments);
+
+        // printJsonDocs(selectedDocuments);
+
+        // StringCounter selectedTermCount = CountUtils.countDocumentFrequency(selectedDocuments);
+        // selectedTermCount.removeSingletons();
+        // StringCounter globalDocFreq = CountUtils.countDocumentFrequency(allDocuments);
+        // StringCounter globalTermFreq = CountUtils.countTermFrequency(allDocuments);
+        // Map<String, Float> tfidf = CountUtils.tfIdfScore(selectedTermCount, globalTermFreq, globalDocFreq);
+
+
+
+        // for (Map.Entry<String, Float> e : CountUtils.reverseSort(tfidf).entrySet()) {
+        //     System.out.println(e.getKey() + "\t" + e.getValue());
+        // }
+        
+        // //Print selected term frequency
+        // for (Map.Entry<String, ?> e : CountUtils.reverseSort(tfidf).entrySet()) {
+        //     System.out.println(e.getKey() + "\t" + e.getValue());
+        // }
         
         // Merge ngram count
         // Map<String, Integer> merged = Parser.mergeNGramCount(selectedDocuments);
@@ -52,5 +77,19 @@ public class Main {
         //     }
         // }
         // System.out.println("bushfire: " + sorted.get("bushfire"));
+    }
+
+    private static void printJsonDocs(List<Document> documents) {
+        System.out.println(documentsToJson(documents));
+    }
+
+    private static void dateCount(List<Document> documents) {
+        StringCounter sc = new StringCounter();
+        for (Document d : documents) {
+            sc.add(d.date);
+        }
+        for (Map.Entry<String, Integer> e : sc.entrySet()) {
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
     }
 }

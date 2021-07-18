@@ -41,4 +41,20 @@ public class StringCounter {
     public boolean containsKey(String key) {
         return countMap.containsKey(key);
     }
+
+    public void removeSingletons() {
+        Map<String, Integer> newMap = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> e : countMap.entrySet()) {
+            if (e.getValue() > 1) {
+                newMap.put(e.getKey(), e.getValue());
+            }
+        }
+        countMap = newMap;
+    }
+
+    public void printAll() {
+        for (Map.Entry<String, Integer> e : countMap.entrySet()) {
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
+    }
 }
